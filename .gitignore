@@ -1,7 +1,7 @@
-.svg
-.txt
-.geo
-.pdf
-.odt
-.o
+*.svg
+*.txt
+*.geo
+*.pdf
+*.odt
+*.o
 
