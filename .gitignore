@@ -5,3 +5,11 @@
 *.odt
 *.o
 
+/t2/*.pdf
+/t2/*.odt
+/t2/src*.svg
+/t2/src*.o
+/t2/src*.geo
+
+
+
