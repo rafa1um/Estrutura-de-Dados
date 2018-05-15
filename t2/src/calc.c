@@ -32,18 +32,18 @@ double calc_distance(NODE search01, NODE search02) {
 	}
 	/* Caso seja 2 Retângulos */
 	else if (search01->reg.r == -1.0 && search02->reg.r == -1.0) {
-		x1 = pow(((search01->reg.x + search01->reg.largura)/2) - ((search02->reg.x + search02->reg.largura)/2), 2);
-		y1 = pow(((search01->reg.y + search01->reg.altura)/2) - ((search02->reg.y + search02->reg.altura)/2), 2);
+		x1 = pow((search01->reg.x + search01->reg.largura/2) - (search02->reg.x + search02->reg.largura/2), 2);
+		y1 = pow((search01->reg.y + search01->reg.altura/2) - (search02->reg.y + search02->reg.altura/2), 2);
 	}
 	/* Caso seja 1 Círculo e 1 Retângulo */
 	else if(search01->reg.r > 0 && search02->reg.r == -1.0) {
-		x1 = pow(((search01->reg.x - search02->reg.x) + (search02->reg.largura)/2), 2);
-		y1 = pow(((search01->reg.y - search02->reg.y) + (search02->reg.altura)/2), 2);
+		x1 = pow(search01->reg.x - (search02->reg.x + (search02->reg.largura/2)), 2);
+		y1 = pow(search01->reg.y - (search02->reg.y + (search02->reg.altura/2)), 2);
 	}
 	/* Caso seja 1 Retângulo e 1 Círculo */
 	else {
-		x1 = pow(((search01->reg.x + search01->reg.largura)/2) - search02->reg.x, 2);
-		y1 = pow(((search01->reg.y + search01->reg.altura)/2) - search02->reg.y, 2);
+		x1 = pow((search01->reg.x + search01->reg.largura/2) - search02->reg.x, 2);
+		y1 = pow((search01->reg.y + search01->reg.altura/2) - search02->reg.y, 2);
 	}
   return sqrt(x1 + y1);
 }
@@ -59,7 +59,140 @@ double calc_mass_rect(NODE search) {
   return xy;
 }
 
-int calc_sobrepos(FILE* file, NODE search01, NODE search02) {
+int calc_sobrepos(FILE* o_SVG, NODE search01, NODE search02) {
   double x1, x2, y1, y2, altura1, altura2, altura3, largura1, largura2, largura3, r1, r2, px, py;
+  int sobrepos = 0;
+  /* Para os dois raios > 0, ou seja, dois círculos; */
+  if(search01->reg.r > 0 && search02->reg.r > 0) {
 
+		x1 = search01->reg.x;
+		y1 = search01->reg.y;
+		r1 = search01->reg.r;
+
+    x2 = search02->reg.x;
+		y2 = search02->reg.y;
+		r2 = search02->reg.r;
+
+		if(calc_distance(search01, search02) < r1 + r2) sobrepos = 1;
+
+		if(x1 - r1 < x2 - r2) px = x1 - r1;
+		else px = x2 - r2;
+
+		if(y1 - r1 < y2 - r2) py = y1 - r1;
+		else py = y2 - r2;
+
+		if(x1 + r1 > x2 + r2) largura1 = x1 + r1 - px;
+		else largura1 = x2 + r2 - px;
+
+		if(y1 + r1 > y2 + r2) altura1 = y1 + r1 - py;
+		else altura1 = y2 + r2 - py;
+
+		if(sobrepos == 1) {
+      fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", px, py, largura1, altura1);
+      fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+      fprintf(o_SVG, "\t<text x='%f' y='%f' font-family='Arial' font-size='20' fill='%s'>sobrepõe</text>\n", px, py-8, "black");
+    }
+	}
+  /* Para um raio > 0 e um raio == -1, ou seja, um Círculo e um Retângulo; */
+  else if(search01->reg.r > 0 && search02->reg.r == -1.0) {
+
+    x1 = search01->reg.x;
+		y1 = search01->reg.y;
+		r1 = search01->reg.r;
+
+    x2 = search02->reg.x;
+		y2 = search02->reg.y;
+		largura2 = search02->reg.largura;
+		altura2 = search02->reg.altura;
+
+		if(calc_interno(search02, x1, y1) > 0) sobrepos = 1;
+		if((calc_interno(search01, x2, y2) > 0) || (calc_interno(search01, x2 + largura2, y2) > 0) || (calc_interno(search01, x2, y2 + altura2) > 0) || (calc_interno(search01, x2 + largura2, y2 + altura2) > 0)) sobrepos = 1;
+		if((calc_interno(search02, x1 + r1, y1) > 0) || (calc_interno(search02, x1, y1 - r1) > 0) || (calc_interno(search02, x1 - r1, y1) > 0) || (calc_interno(search02, x1, y1 + r1) > 0)) sobrepos = 1;
+
+		if(x1 - r1 < x2) px = x1 - r1;
+		else px = x2;
+
+		if(y1 - r1 < y2) py = y1 - r1;
+		else py = y2;
+
+		if(x1 + r1 > x2 + largura2)
+			largura1 = x1 + r1 - px;
+		else largura1 = x2 + largura2 - px;
+
+		if(y1 + r1 > y2 + altura2) altura1 = y1 + r1 - py;
+		else altura1 = y2 + altura2 - py;
+
+    if(sobrepos == 1) {
+      fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", px, py, largura1, altura1);
+      fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+      fprintf(o_SVG, "\t<text x='%f' y='%f' font-family='Arial' font-size='20' fill='%s'>sobrepõe</text>\n", px, py-8, "black");
+    }
+	}
+  /* Para um raio == -1 e um raio > 0, ou seja, um Retângulo e um Círculo; */
+  else if(search01->reg.r == -1.0 && search02->reg.r == -1.0) {
+
+    x1 = search01->reg.x;
+		y1 = search01->reg.y;
+		largura2 = search01->reg.largura;
+		altura2 = search01->reg.altura;
+
+    x2 = search02->reg.x;
+		y2 = search02->reg.y;
+		largura3 = search02->reg.largura;
+		altura3 = search02->reg.altura;
+
+		if(calc_interno(search02, x1, y1) > 0 || calc_interno(search02, x1 + largura2, y1) > 0 || calc_interno(search02, x1, y1 + altura2) > 0 || calc_interno(search02, x1 + largura2, y1 + altura2) > 0) sobrepos = 1;
+
+		if(x1 < x2) px = x1;
+		else px = x2;
+
+		if(y1 < y2) py = y1;
+		else py = y2;
+
+		if(x1 + largura2 > x2 + largura3) largura1 = x1 + largura2 - px;
+		else largura1 = x2 + largura3 - px;
+
+		if(y1+altura2 > y2 + altura3)	altura1 = y1 + altura2 - py;
+		else altura1 = y2 + altura3 - py;
+
+    if(sobrepos == 1) {
+      fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", px, py, largura1, altura1);
+      fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+      fprintf(o_SVG, "\t<text x='%f' y='%f' font-family='Arial' font-size='20' fill='%s'>sobrepõe</text>\n", px, py-8, "black");
+    }
+  }
+  /* Para dois raios == -1, ou seja, dois Retângulos; */
+  else if(search01->reg.r == -1.0 && search02->reg.r > 0) {
+
+    x1 = search01->reg.x;
+		y1 = search01->reg.y;
+		largura2 = search01->reg.largura;
+		altura2 = search01->reg.altura;
+    x2 = search02->reg.x;
+		y2 = search02->reg.y;
+		r2 = search02->reg.r;
+
+		if((calc_interno(search01, x2, y2) > 0))	sobrepos = 1;
+		if((calc_interno(search02, x1, y1) > 0) || (calc_interno(search02, x1 + largura2, y1) > 0) || (calc_interno(search02, x1, y1 + altura2) > 0) || (calc_interno(search02, x1 + largura2, y1 + altura2) > 0))	sobrepos = 1;
+		if((calc_interno(search01, x2 + r2, y2) > 0) || (calc_interno(search01, x2, y2 - r2) > 0) || (calc_interno(search01, x2-r2, y2) > 0) || (calc_interno(search01, x2, y2 + r2) > 0)) sobrepos = 1;
+
+		if(x1 < x2 - r2) px = x1;
+		else px = x2 - r2;
+
+		if(y1 < y2 - r2) py = y1;
+		else py = y2 - r2;
+
+		if(x1 + largura2 > x2 + r2) largura1 = x1 + largura2 - px;
+		else largura1 = x2 + r2 - px;
+
+		if(y1 + altura2 > y2 + r2)	altura1 = y1 + altura2 - py;
+		else altura1 = y2 + r2 - py;
+
+    if(sobrepos == 1) {
+      fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", px, py, largura1, altura1);
+      fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+      fprintf(o_SVG, "\t<text x='%f' y='%f' font-family='Arial' font-size='20' fill='%s'>sobrepõe</text>\n", px, py-8, "black");
+    }
+	}
+  return sobrepos;
 }
