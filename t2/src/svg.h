@@ -14,7 +14,7 @@ void circ(FILE* output, REGISTRO *regCirculo); /* DESENHA UM CIRCULO NO ARQUIVO 
 /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações do circulo,
  tendo as informações, imprime no arquivo as linhas referentes ao retangulo. */
 
-void line(FILE* o_line, NODE search, double x1y1, double x2y2, double distance); /* DESENHA UMA LINHA ENTRE O CENTRO DE MASSA DAS FIGURAS */
+void line(FILE* o_suSVG, NODE search01, NODE search02, double x, double y); /* DESENHA UMA LINHA ENTRE O CENTRO DE MASSA DAS FIGURAS */
  /* Recebe um ponteiro para um arquivo, um nó para a posição desejada da buscada, a posição do centro de massa da
   primeira figura x1y1, a posição do centro de massa da segunda figura x2y2 e a distãncia entre as duas */
 

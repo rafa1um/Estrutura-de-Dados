@@ -1,3 +1,5 @@
+#ifndef CALC_H
+#define CALC_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -18,3 +20,5 @@ double calc_mass_rect(NODE search01);
 
 int calc_sobrepos(FILE* o_SVG, NODE search01, NODE search02);
 /* Recebe um arquivo e dois nós da posição de duas figuras e verifica se uma sobrepôe a outra e vice-versa */
+
+#endif

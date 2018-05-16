@@ -1,4 +1,5 @@
 #include "svg.h"
+#include "calc.h"
 /* INICIALIZA O ARQUIVO SVG */
 void new_SVG(FILE* output) {
   fprintf(output, "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink'>\n");
@@ -14,9 +15,18 @@ void circ(FILE* output, REGISTRO *regCirculo) {
   fprintf(output, "\t<circle fill='%s' stroke='%s' r='%f' cx='%f' cy='%f' />\n", regCirculo->cor, regCirculo->borda, regCirculo->r, regCirculo->x, regCirculo->y);
 }
 
-void line(FILE* o_line, NODE search, double x1y1, double x2y2, double distance) {
-    fprintf(o_line, "\t<line stroke='%s' stroke-width='%dpx' x1='%f' y1='%f' x2='%f' y2='%f'/>\n", search->reg.cor, 1, x1y1, x1y1, x2y2, x2y2);
-    fprintf(o_line, "\t<text x='%f' y='%f' fill='%s'>%f</text>\n", distance/2, distance/2, "black", distance/2);
+void line(FILE* o_suSVG, NODE search01, NODE search02, double x, double y) {
+    while(search02 != NULL) {
+      if(search02->reg.r > 0){
+        fprintf(o_suSVG, "\t<text x='%f' y='%f' font-family='Arial' font-size='20' fill='%s'>%.2f</text>\n", (search01->reg.x + search02->reg.x)/2, (search01->reg.y + search02->reg.y)/2, search01->reg.borda, calc_distance(search01, search02));
+        fprintf(o_suSVG, "\t<line stroke='%s' stroke-width='%dpx' x1='%f' y1='%f' x2='%f' y2='%f'/>\n", search01->reg.borda, 1, x, y, search02->reg.x, search02->reg.y);
+      }
+      else {
+        fprintf(o_suSVG, "\t<text x='%f' y='%f' font-family='Arial' font-size='20' fill='%s'>%.2f</text>\n", (search01->reg.x + search02->reg.x)/2, (search01->reg.y + search02->reg.y)/2, search01->reg.borda, calc_distance(search01, search02));
+        fprintf(o_suSVG, "\t<line stroke='%s' stroke-width='%dpx' x1='%f' y1='%f' x2='%f' y2='%f'/>\n", search01->reg.borda, 1, x, y, search02->reg.x + search02->reg.largura/2, search02->reg.y + search02->reg.altura/2);
+      }
+      search02 = search02->prox;
+    }
 }
 
 /* FECHA O ARQUIVO SVG */

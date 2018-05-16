@@ -61,7 +61,6 @@ void inserirElemento(LISTA* lista, REGISTRO reg) {
   i->reg = reg;
   i->prox = lista->cabeca;
   lista->cabeca = i;
-  printf("Elemento adicionado com sucesso!\n");
 }
 
 /* Exclui um elemento da Lista; */
@@ -83,6 +82,8 @@ void reinicializarLista(LISTA* lista) {
   NODE endereco = lista->cabeca;
   while (endereco != NULL) {
     NODE apagar = endereco;
+    free(endereco->reg.cor);
+    free(endereco->reg.borda);
     endereco = endereco->prox;
     free(apagar);
   }
