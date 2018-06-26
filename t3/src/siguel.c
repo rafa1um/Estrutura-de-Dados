@@ -239,6 +239,7 @@ int main(int argc, char *argv[]) {
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
           reg_quadra->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_quadra->id, token);
           token = strtok(NULL, " ");
           reg_quadra->x = atof(token);
           token = strtok(NULL, " ");
@@ -247,6 +248,7 @@ int main(int argc, char *argv[]) {
           reg_quadra->largura = atof(token);
           token = strtok(NULL, " ");
           reg_quadra->altura = atof(token);
+          quadra_SVG(o_SVG, reg_quadra);
           inserirQUAHISERA(cidade, *reg_quadra);
         }
         /*---------- C O M A N D O  -  h ----------*/
@@ -254,10 +256,12 @@ int main(int argc, char *argv[]) {
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
           reg_hidrante->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_hidrante->id, token);
           token = strtok(NULL, " ");
           reg_hidrante->x = atof(token);
           token = strtok(NULL, " ");
           reg_hidrante->y = atof(token);
+          hidrante_SVG(o_SVG, reg_hidrante);
           inserirQUAHISERA(cidade, *reg_hidrante);
         }
         /*---------- C O M A N D O  -  s ----------*/
@@ -265,10 +269,12 @@ int main(int argc, char *argv[]) {
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
           reg_semaforo->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_semaforo->id, token);
           token = strtok(NULL, " ");
           reg_semaforo->x = atof(token);
           token = strtok(NULL, " ");
           reg_semaforo->y = atof(token);
+          semaforo_SVG(o_SVG, reg_semaforo);
           inserirQUAHISERA(cidade, *reg_semaforo);
         }
         /*---------- C O M A N D O  -  t ----------*/
@@ -276,6 +282,7 @@ int main(int argc, char *argv[]) {
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
           reg_radio->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_radio->id, token);
           token = strtok(NULL, " ");
           reg_radio->x = atof(token);
           token = strtok(NULL, " ");
@@ -287,32 +294,40 @@ int main(int argc, char *argv[]) {
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
           reg_quadra->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_quadra->borda, token);
           token = strtok(NULL, " ");
           reg_quadra->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_quadra->cor, token);
         }
         /*---------- C O M A N D O  -  ch ----------*/
         else if(strcmp(comando, "ch") == 0) { /* Insere uma rádio-base (torre de celular) */
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
           reg_hidrante->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_hidrante->borda, token);
           token = strtok(NULL, " ");
           reg_hidrante->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_hidrante->cor, token);
         }
         /*---------- C O M A N D O  -  ct ----------*/
         else if(strcmp(comando, "ct") == 0) { /* Insere uma rádio-base (torre de celular) */
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
-          reg_semaforo->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          reg_radio->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_radio->borda, token);
           token = strtok(NULL, " ");
-          reg_semaforo->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
+          reg_radio->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_radio->cor, token);
         }
         /*---------- C O M A N D O  -  cs ----------*/
         else if(strcmp(comando, "cs") == 0) { /* Insere uma rádio-base (torre de celular) */
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
-          reg_radio->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          reg_semaforo->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_semaforo->borda, token);
           token = strtok(NULL, " ");
-          reg_radio->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
+          reg_semaforo->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_semaforo->cor, token);
         }
         /*---------- C O M A N D O  -  o ----------*/
         else if(strcmp(comando, "o") == 0) { /* Verifica a sobreposição das formas; */
@@ -428,6 +443,12 @@ int main(int argc, char *argv[]) {
             free(content);
             free(regCirculo);
             free(regRetangulo);
+            free(reg_quadra);
+            free(reg_hidrante);
+            free(reg_semaforo);
+            free(reg_radio);
+            reinicializarLista(cidade);
+            free(cidade);
             reinicializarLista(lista);
             free(lista);
             /* ------------------------------------------------- */

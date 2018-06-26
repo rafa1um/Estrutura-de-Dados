@@ -14,19 +14,19 @@ void circ(FILE* output, REGISTRO *regCirculo); /* DESENHA UM CIRCULO NO ARQUIVO 
 /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações do circulo,
  tendo as informações, imprime no arquivo as linhas referentes ao retangulo. */
 
- void quadra(FILE* output, REGISTRO *reg_quadra); /* DESENHA UMA QUADRA NO ARQUIVO SVG */
+ void quadra_SVG(FILE* output, REGISTRO *reg_quadra); /* DESENHA UMA QUADRA NO ARQUIVO SVG */
  /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações da quadra,
   tendo as informações, imprime no arquivo as linhas referentes à quadra. */
 
- void hidrante(FILE* output, REGISTRO *reg_hidrante); /* DESENHA UM HIDRANTE NO ARQUIVO SVG */
+ void hidrante_SVG(FILE* output, REGISTRO *reg_hidrante); /* DESENHA UM HIDRANTE NO ARQUIVO SVG */
  /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações do hidrante,
   tendo as informações, imprime no arquivo as linhas referentes ao hidrante. */
 
-  void rect(FILE* output, REGISTRO *reg_semaforo); /* DESENHA UM SEMAFORO NO ARQUIVO SVG */
+  void semaforo_SVG(FILE* output, REGISTRO *reg_semaforo); /* DESENHA UM SEMAFORO NO ARQUIVO SVG */
   /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações do semaforo,
    tendo as informações, imprime no arquivo as linhas referentes ao semaforo. */
 
-   void rect(FILE* output, REGISTRO *reg_radio); /* DESENHA UMA TORRE DE RADIO NO ARQUIVO SVG */
+   void radio_SVG(FILE* output, REGISTRO *reg_radio); /* DESENHA UMA TORRE DE RADIO NO ARQUIVO SVG */
    /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações da torre,
     tendo as informações, imprime no arquivo as linhas referentes à torre. */
 
