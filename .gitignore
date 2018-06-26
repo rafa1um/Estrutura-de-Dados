@@ -4,6 +4,7 @@
 *.pdf
 *.odt
 *.o
+*.qry
 
 /t2/*.pdf
 /t2/*.odt

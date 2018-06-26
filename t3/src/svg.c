@@ -26,7 +26,7 @@ void hidrante_SVG(FILE* output, REGISTRO *reg_hidrante) {
 
 /* DESENHA UM SEMAFORO NO ARQUIVO SVG */
 void semaforo_SVG(FILE* output, REGISTRO *reg_semaforo) {
-  fprintf(output, "\t<rect fill='%s' stroke='%s' stroke-width='%dpx' width='%f' height='%f' y='%f' x='%f' />\n", reg_semaforo->cor, reg_semaforo->borda, 1, reg_semaforo->largura, reg_semaforo->altura, reg_semaforo->y, reg_semaforo->x);
+  fprintf(output, "\t<rect fill='%s' stroke='%s' stroke-width='%dpx' width='20px' height='35px' y='%f' x='%f' />\n", reg_semaforo->cor, reg_semaforo->borda, 1, reg_semaforo->y, reg_semaforo->x);
 }
 
 void line(FILE* o_suSVG, NODE search01, NODE search02, double x, double y) {
