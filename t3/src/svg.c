@@ -23,7 +23,7 @@ void quadra_SVG(FILE* output, REGISTRO *reg_quadra) {
 void hidrante_SVG(FILE* output, REGISTRO *reg_hidrante) {
   fprintf(output, "\t<circle fill='%s' stroke='%s' r='10px' cx='%f' cy='%f' />\n", reg_hidrante->cor, reg_hidrante->borda, reg_hidrante->x, reg_hidrante->y);
 }
-/*doiasudjsa*/
+
 /* DESENHA UM SEMAFORO NO ARQUIVO SVG */
 void semaforo_SVG(FILE* output, REGISTRO *reg_semaforo) {
   fprintf(output, "\t<rect fill='%s' stroke='%s' stroke-width='%dpx' width='20px' height='35px' y='%f' x='%f' />\n", reg_semaforo->cor, reg_semaforo->borda, 1, reg_semaforo->y, reg_semaforo->x);
