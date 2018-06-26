@@ -3,6 +3,7 @@
 
 typedef struct {
   int chave;
+  char *id;
   char *borda;
   char *cor;
   double r;
@@ -35,6 +36,8 @@ NODE buscaSeq(LISTA* lista, int ch);
 /* Recebe uma lista e um inteiro ch, onde o valor chave desse ch será buscado na lista. */
 NODE buscaSeqExc(LISTA* lista, int ch, NODE* anterior);
 void inserirElemento(LISTA* lista, REGISTRO reg);
+/* Recebe uma lista e um registro, onde esse registro será inserido na lista. */
+void inserirQUAHISERA(LISTA* cidade, REGISTRO reg); /* QUA dra  HI drante  SE maforo  RA dio*/
 /* Recebe uma lista e um registro, onde esse registro será inserido na lista. */
 int excluirElemento(LISTA* lista, int ch);
 /* Recebe uma lista e um inteiro ch, onde esse ch será o número de chave da lista que será excluído. */

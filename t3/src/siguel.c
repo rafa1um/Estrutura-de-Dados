@@ -10,9 +10,14 @@ int main(int argc, char *argv[]) {
       int nx = 1000, id1, id2, i_point, sobrepos, open = 0, i, j, len;
       REGISTRO *regCirculo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *regRetangulo = (REGISTRO*) malloc(sizeof(REGISTRO));
+      REGISTRO *reg_quadra = (REGISTRO*) malloc(sizeof(REGISTRO));
+      REGISTRO *reg_hidrante = (REGISTRO*) malloc(sizeof(REGISTRO));
+      REGISTRO *reg_semaforo = (REGISTRO*) malloc(sizeof(REGISTRO));
+      REGISTRO *reg_radio = (REGISTRO*) malloc(sizeof(REGISTRO));
       LISTA *lista = (LISTA*) malloc(sizeof(LISTA));
-      NODE search01, search02;
+      LISTA *cidade = (LISTA*) malloc(sizeof(LISTA));
 
+      NODE search01, search02;
 
       /* ------------- ARGUMENTOS ---------------*/
       for (i = 1; i < argc; i++) {
@@ -231,35 +236,83 @@ int main(int argc, char *argv[]) {
         }
         /*---------- C O M A N D O  -  q ----------*/
         else if(strcmp(comando, "q") == 0) { /* Insere uma quadra (retângulo e cep) */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_quadra->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_quadra->x = atof(token);
+          token = strtok(NULL, " ");
+          reg_quadra->y = atof(token);
+          token = strtok(NULL, " ");
+          reg_quadra->largura = atof(token);
+          token = strtok(NULL, " ");
+          reg_quadra->altura = atof(token);
+          inserirQUAHISERA(cidade, *reg_quadra);
         }
         /*---------- C O M A N D O  -  h ----------*/
         else if(strcmp(comando, "h") == 0) { /* Insere um hidrante */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_hidrante->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_hidrante->x = atof(token);
+          token = strtok(NULL, " ");
+          reg_hidrante->y = atof(token);
+          inserirQUAHISERA(cidade, *reg_hidrante);
         }
         /*---------- C O M A N D O  -  s ----------*/
         else if(strcmp(comando, "s") == 0) { /* Insere um semáforo */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_semaforo->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_semaforo->x = atof(token);
+          token = strtok(NULL, " ");
+          reg_semaforo->y = atof(token);
+          inserirQUAHISERA(cidade, *reg_semaforo);
         }
         /*---------- C O M A N D O  -  t ----------*/
         else if(strcmp(comando, "t") == 0) { /* Insere uma rádio-base (torre de celular) */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_radio->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_radio->x = atof(token);
+          token = strtok(NULL, " ");
+          reg_radio->y = atof(token);
+          inserirQUAHISERA(cidade, *reg_radio);
         }
         /*---------- C O M A N D O  -  cq ----------*/
         else if(strcmp(comando, "cq") == 0) { /* Insere uma rádio-base (torre de celular) */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_quadra->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_quadra->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
         }
         /*---------- C O M A N D O  -  ch ----------*/
         else if(strcmp(comando, "ch") == 0) { /* Insere uma rádio-base (torre de celular) */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_hidrante->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_hidrante->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
         }
         /*---------- C O M A N D O  -  ct ----------*/
         else if(strcmp(comando, "ct") == 0) { /* Insere uma rádio-base (torre de celular) */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_semaforo->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_semaforo->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
         }
         /*---------- C O M A N D O  -  cs ----------*/
         else if(strcmp(comando, "cs") == 0) { /* Insere uma rádio-base (torre de celular) */
-
+          fscanf(file, " %[^\n]s ", content);
+          token = strtok(content, " ");
+          reg_radio->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          token = strtok(NULL, " ");
+          reg_radio->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
         }
         /*---------- C O M A N D O  -  o ----------*/
         else if(strcmp(comando, "o") == 0) { /* Verifica a sobreposição das formas; */

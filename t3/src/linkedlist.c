@@ -54,7 +54,7 @@ NODE buscaSeqExc(LISTA* lista, int ch, NODE* anterior) {
   return NULL;
 }
 
-/* Insere um elemento na Lista; */
+/* Insere um elemento na Lista */
 void inserirElemento(LISTA* lista, REGISTRO reg) {
   NODE i;
   i = (NODE) malloc(sizeof(ELEMENTO));
@@ -62,8 +62,16 @@ void inserirElemento(LISTA* lista, REGISTRO reg) {
   i->prox = lista->cabeca;
   lista->cabeca = i;
 }
+/* Insere um elemento na Lista cidade */
+void inserirQUAHISERA(LISTA* cidade, REGISTRO reg) {
+  NODE i;
+  i = (NODE) malloc(sizeof(ELEMENTO));
+  i->reg = reg;
+  i->prox = cidade->cabeca;
+  cidade->cabeca = i;
+}
 
-/* Exclui um elemento da Lista; */
+/* Exclui um elemento da Lista */
 int excluirElemento(LISTA* lista, int ch) {
   NODE anterior, i;
   i = buscaSeqExc(lista, ch, &anterior);
