@@ -26,7 +26,8 @@ void exibirLista(LISTA* lista) {
   NODE endereco = lista->cabeca;
   printf("\nLista: /");
   while(endereco != NULL) {
-    printf(" %d /", endereco->reg.chave);
+    printf("%s/", endereco->reg.borda);
+    printf("%s\n", endereco->reg.cor);
     endereco = endereco->prox;
   }
   printf("\n");
@@ -85,13 +86,24 @@ int excluirElemento(LISTA* lista, int ch) {
   return 1;
 }
 
-/* Reinicializa a Lista; */
+/* Reinicializa a Lista */
 void reinicializarLista(LISTA* lista) {
   NODE endereco = lista->cabeca;
   while (endereco != NULL) {
     NODE apagar = endereco;
     free(endereco->reg.cor);
     free(endereco->reg.borda);
+    endereco = endereco->prox;
+    free(apagar);
+  }
+  lista->cabeca = NULL;
+}
+
+void reinicializarListaEquip(LISTA* lista) {
+  NODE endereco = lista->cabeca;
+  while (endereco != NULL) {
+    NODE apagar = endereco;
+    free(endereco->reg.id);
     endereco = endereco->prox;
     free(apagar);
   }

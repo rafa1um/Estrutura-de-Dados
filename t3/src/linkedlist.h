@@ -44,4 +44,6 @@ int excluirElemento(LISTA* lista, int ch);
 void reinicializarLista(LISTA* lista);
 /* Recebe uma lista e reinicializa a mesma, para poder ser reutilizada ou liberada posteriormente */
 
+void reinicializarListaEquip(LISTA* lista);
+
 #endif

@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
       REGISTRO *reg_semaforo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *reg_radio = (REGISTRO*) malloc(sizeof(REGISTRO));
       LISTA *lista = (LISTA*) malloc(sizeof(LISTA));
-      LISTA *cidade = (LISTA*) malloc(sizeof(LISTA));
+      LISTA *equip = (LISTA*) malloc(sizeof(LISTA));
+      LISTA *quadra = (LISTA*) malloc(sizeof(LISTA));
 
       NODE search01, search02;
 
@@ -143,6 +144,9 @@ int main(int argc, char *argv[]) {
       }
       /* ----- INICIALIZAÇÕES ----- */
       inicializarLista(lista);
+      inicializarLista(equip);
+      inicializarLista(quadra);
+
       if (dir[strlen(dir)-1] != '/') {
         aux_name = (char*) calloc((strlen(base_name) + (strlen(dir))+6), sizeof(char));
         sprintf(aux_name, "%s/%s.txt", dir, base_name);
@@ -249,7 +253,7 @@ int main(int argc, char *argv[]) {
           token = strtok(NULL, " ");
           reg_quadra->altura = atof(token);
           quadra_SVG(o_SVG, reg_quadra);
-          inserirQUAHISERA(cidade, *reg_quadra);
+          inserirQUAHISERA(quadra, *reg_quadra);
         }
         /*---------- C O M A N D O  -  h ----------*/
         else if(strcmp(comando, "h") == 0) { /* Insere um hidrante */
@@ -262,7 +266,7 @@ int main(int argc, char *argv[]) {
           token = strtok(NULL, " ");
           reg_hidrante->y = atof(token);
           hidrante_SVG(o_SVG, reg_hidrante);
-          inserirQUAHISERA(cidade, *reg_hidrante);
+          inserirQUAHISERA(equip, *reg_hidrante);
         }
         /*---------- C O M A N D O  -  s ----------*/
         else if(strcmp(comando, "s") == 0) { /* Insere um semáforo */
@@ -275,7 +279,7 @@ int main(int argc, char *argv[]) {
           token = strtok(NULL, " ");
           reg_semaforo->y = atof(token);
           semaforo_SVG(o_SVG, reg_semaforo);
-          inserirQUAHISERA(cidade, *reg_semaforo);
+          inserirQUAHISERA(equip, *reg_semaforo);
         }
         /*---------- C O M A N D O  -  t ----------*/
         else if(strcmp(comando, "t") == 0) { /* Insere uma rádio-base (torre de celular) */
@@ -287,7 +291,7 @@ int main(int argc, char *argv[]) {
           reg_radio->x = atof(token);
           token = strtok(NULL, " ");
           reg_radio->y = atof(token);
-          inserirQUAHISERA(cidade, *reg_radio);
+          inserirQUAHISERA(equip, *reg_radio);
         }
         /*---------- C O M A N D O  -  cq ----------*/
         else if(strcmp(comando, "cq") == 0) { /* Insere uma rádio-base (torre de celular) */
@@ -433,6 +437,7 @@ int main(int argc, char *argv[]) {
         /*---------- C O M A N D O  -  # ----------*/
         else if(strcmp(comando, "#") == 0) { /* Finaliza arquivo; */
             fscanf(file, " %[^\n]s ", content);
+            exibirLista(equip);
             end_SVG(o_SVG); /* Fecha a TAG do SVG */
             fclose(o_SVG);
             fclose(o_TXT);
@@ -443,12 +448,22 @@ int main(int argc, char *argv[]) {
             free(content);
             free(regCirculo);
             free(regRetangulo);
+            free(reg_quadra->cor);
+            free(reg_hidrante->cor);
+            free(reg_semaforo->cor);
+            free(reg_radio->cor);
+            free(reg_quadra->borda);
+            free(reg_hidrante->borda);
+            free(reg_semaforo->borda);
+            free(reg_radio->borda);
             free(reg_quadra);
             free(reg_hidrante);
             free(reg_semaforo);
             free(reg_radio);
-            reinicializarLista(cidade);
-            free(cidade);
+            reinicializarListaEquip(quadra);
+            free(quadra);
+            reinicializarListaEquip(equip);
+            free(equip);
             reinicializarLista(lista);
             free(lista);
             /* ------------------------------------------------- */
