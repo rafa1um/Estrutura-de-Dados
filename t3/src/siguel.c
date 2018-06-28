@@ -3,8 +3,8 @@
 #include "calc.h"
 
 int main(int argc, char *argv[]) {
-      FILE *file, *o_SVG, *o_TXT, *o_suSVG;
-      char *base_name = NULL, *token = NULL, *dir = NULL, *path = NULL, *content = NULL, *aux = NULL, *aux_name = NULL;
+      FILE *file, *o_SVG, *o_TXT, *o_suSVG, *qry;
+      char *base_name = NULL, *token = NULL, *dir = NULL, *path = NULL, *content = NULL, *aux = NULL, *aux_name = NULL, *base_qry = NULL;
       char comando[5];
       double x, y, distance;
       int nx = 1000, id1, id2, i_point, sobrepos, open = 0, i, j, len;
@@ -21,26 +21,31 @@ int main(int argc, char *argv[]) {
       NODE search01, search02;
 
       /* ------------- ARGUMENTOS ---------------*/
-      for (i = 1; i < argc; i++) {
-        if (strcmp("-e", argv[i]) == 0) {
+      for(i = 1; i < argc; i++) {
+        if(strcmp("-e", argv[i]) == 0) {
           i++;
           len = strlen(argv[i]);
           path = (char *)calloc(len + 1, sizeof(char));
           strcpy(path, argv[i]);
         }
-
-        if (strcmp("-f", argv[i]) == 0) {
+        if(strcmp("-f", argv[i]) == 0) {
           i++;
           len = strlen(argv[i]);
           base_name = (char *)calloc(len + 1, sizeof(char));
           strcpy(base_name, argv[i]);
         }
-
-        if (strcmp("-o", argv[i]) == 0) {
+        if(strcmp("-o", argv[i]) == 0) {
           i++;
           len = strlen(argv[i]);
           dir = (char *)calloc(len + 1, sizeof(char));
           strcpy(dir, argv[i]);
+        }
+        if(strcmp("-q", argv[i]) == 0) {
+          i++;
+          len = strlen(argv[i]);
+          base_qry = (char *)calloc(len + 1, sizeof(char));
+          strcpy(base_qry, argv[i]);
+          qry = fopen(base_qry, "r");
         }
       }
 
@@ -64,7 +69,6 @@ int main(int argc, char *argv[]) {
       /* Lida com casos que tenha / no -f e -e */
       if (path != NULL) {
         len = strlen(path);
-
         if ((path[len - 1] == '/') && (base_name[0] == '/')) {
           path[len - 1] = '\0';
           aux = (char *)calloc(len, sizeof(char));
@@ -79,26 +83,23 @@ int main(int argc, char *argv[]) {
           aux = (char *)calloc(len + 1, sizeof(char));
           strcpy(aux, path);
           free(path);
-          path = (char *)calloc(len + 2 + strlen(base_name),
-                                               sizeof(char));
+          path = (char *)calloc(len + 2 + strlen(base_name), sizeof(char));
           sprintf(path, "%s/%s", aux, base_name);
           free(aux);
         } else {
           aux = (char *)calloc(len + 1, sizeof(char));
           strcpy(aux, path);
           free(path);
-          path = (char *)calloc(len + 1 + strlen(base_name),
-                                               sizeof(char));
+          path = (char *)calloc(len + 1 + strlen(base_name), sizeof(char));
           sprintf(path, "%s%s", aux, base_name);
           free(aux);
         }
       } else {
-        path =
-          (char *)calloc(strlen(base_name) + 1, sizeof(char));
+        path = (char *)calloc(strlen(base_name) + 1, sizeof(char));
         strcpy(path, base_name);
       }
 
-      /* Isola o nome da arquivo para usar nas extensões */
+      /* Isola o nome do arquivo para usar nas extensões */
       len = strlen(base_name);
 
       for (i = len-1; i > -1; i--) {
@@ -110,7 +111,7 @@ int main(int argc, char *argv[]) {
       /* Caso não tenha -e */
       if (i == -1) {
         aux = (char *)calloc(len + 1, sizeof(char));
-        i   = 0;
+        i = 0;
 
         for (j = 0; j < len - 4; j++, i++) {
           aux[j] = base_name[i];
@@ -136,10 +137,53 @@ int main(int argc, char *argv[]) {
         free(aux);
       }
 
+      if(base_qry != NULL) { /* Verifica se o arquivo qry foi aberto com exito */
+        printf("Arquivo qry executado com sucesso!");
+
+        len = strlen(base_qry);
+        for (i = len-1; i > -1; i--) {
+          if (base_qry[i] == '/') {
+            break;
+          }
+        }
+        /* Caso não tenha -e */
+        if (i == -1) {
+          aux = (char *)calloc(len + 1, sizeof(char));
+          i   = 0;
+
+          for (j = 0; j < len - 4; j++, i++) {
+            aux[j] = base_qry[i];
+          }
+          aux[len - 4] = '\0';
+          free(base_qry);
+          base_qry = (char *)calloc(len + 1, sizeof(char));
+          strcpy(base_qry, aux);
+          free(aux);
+        } else {
+          /* Caso tenho -e */
+          len = len - i;
+          aux = (char *)calloc(len + 1, sizeof(char));
+          i++;
+
+          for (j = 0; j < len - 5; j++, i++) {
+            aux[j] = base_qry[i];
+          }
+          aux[len - 5] = '\0';
+          free(base_qry);
+          base_qry = (char *)calloc(len + 1, sizeof(char));
+          strcpy(base_qry, aux);
+          free(aux);
+        }
+        printf("%s", base_qry);
+      }
+
+
+
+
       /* ----------------------- INICIO ------------------------------ */
       file = fopen(path, "r"); /* Abre o arquivo no modo leitura na variável file; */
       if(file == NULL) { /* Verifica se o arquivo foi aberto; */
-        printf("Ocorreu um problema ao tentar abrir o arquivo!\n");
+        printf("Ocorreu um problema ao tentar abrir o arquivo geo!\n");
         exit(0); /* Termina o programa; */
       }
       /* ----- INICIALIZAÇÕES ----- */
@@ -165,6 +209,7 @@ int main(int argc, char *argv[]) {
          aux_name = (char*) calloc((strlen(base_name) + (strlen(dir))+5), sizeof(char));
          sprintf(aux_name, "%s%s.svg", dir, base_name);
       }
+
       o_SVG = fopen(aux_name, "w"); /* Abre ou cria um arquivo .svg em modo escrita. */
       free(aux_name);
       fprintf(o_SVG, "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink'>\n");
