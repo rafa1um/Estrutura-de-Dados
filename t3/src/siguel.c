@@ -174,10 +174,10 @@ int main(int argc, char *argv[]) {
           strcpy(base_qry, aux);
           free(aux);
         }
-        printf("%s", base_qry);
+        printf("\n%s\n", base_qry);
+      } else {
+        printf("Ocorreu um erro ao abrir o arquivo .qry!!");
       }
-
-
 
 
       /* ----------------------- INICIO ------------------------------ */
@@ -487,6 +487,7 @@ int main(int argc, char *argv[]) {
             fclose(o_SVG);
             fclose(o_TXT);
             /* -- LIBERAÇÃO DO RESTANTE DAS MEMÓRIAS USADAS -- */
+            free(base_qry);
             free(base_name);
             free(dir);
             free(path);
@@ -515,6 +516,7 @@ int main(int argc, char *argv[]) {
         }
       }
       /* ---- FINALIZAÇÃO DO CÓDIGO ----- *//**/
+      fclose(qry);
       fclose(file);
       printf("Programa executado com sucesso!\n");
       /* -------------------------------- */
