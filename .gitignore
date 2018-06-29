@@ -5,6 +5,9 @@
 *.odt
 *.o
 *.qry
+*vgcore.*
+*.vgcore*
+*.h.gch
 
 /t2/*.pdf
 /t2/*.odt
