@@ -3,22 +3,22 @@
 #include "calc.h"
 
 int main(int argc, char *argv[]) {
-      FILE *file, *o_SVG, *o_TXT, *o_suSVG, *qry, *o_QRY;
+      FILE *file, *o_SVG, *o_TXT, *o_suSVG, *qry;
       char *base_name = NULL, *token = NULL, *dir = NULL, *path = NULL, *content = NULL, *aux = NULL, *aux_name = NULL, *base_qry = NULL;
       char comando[5];
-      double x, y, distance;
+      double x, y, altura, largura, raio, distance;
       int nx = 1000, id1, id2, i_point, sobrepos, open = 0, i, j, len;
       REGISTRO *regCirculo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *regRetangulo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *reg_quadra = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *reg_hidrante = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *reg_semaforo = (REGISTRO*) malloc(sizeof(REGISTRO));
-      REGISTRO *reg_radio = (REGISTRO*) malloc(sizeof(REGISTRO));
+      REGISTRO *reg_torre = (REGISTRO*) malloc(sizeof(REGISTRO));
       LISTA *lista = (LISTA*) malloc(sizeof(LISTA));
       LISTA *quadra = (LISTA*) malloc(sizeof(LISTA));
       LISTA *hidrante = (LISTA*) malloc(sizeof(LISTA));
       LISTA *semaforo = (LISTA*) malloc(sizeof(LISTA));
-      LISTA *radio = (LISTA*) malloc(sizeof(LISTA));
+      LISTA *torre = (LISTA*) malloc(sizeof(LISTA));
       NODE search01, search02;
 
       /* ------------- ARGUMENTOS ---------------*/
@@ -79,7 +79,6 @@ int main(int argc, char *argv[]) {
           sprintf(path, "%s%s", aux, base_name);
           free(aux);
         } else
-
         if ((path[len - 1] != '/') &&  (base_name[0] != '/')) {
           aux = (char *)calloc(len + 1, sizeof(char));
           strcpy(aux, path);
@@ -175,7 +174,6 @@ int main(int argc, char *argv[]) {
           strcpy(base_qry, aux);
           free(aux);
         }
-        printf("\n%s\n", base_qry);
       } else {
         printf("Ocorreu um erro ao abrir o arquivo .qry!!");
       }
@@ -192,7 +190,7 @@ int main(int argc, char *argv[]) {
       inicializarLista(quadra);
       inicializarLista(hidrante);
       inicializarLista(semaforo);
-      inicializarLista(radio);
+      inicializarLista(torre);
 
       if (dir[strlen(dir)-1] != '/') {
         aux_name = (char*) calloc((strlen(base_name) + (strlen(dir))+6), sizeof(char));
@@ -333,13 +331,14 @@ int main(int argc, char *argv[]) {
         else if(strcmp(comando, "t") == 0) { /* Insere uma rádio-base (torre de celular) */
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
-          reg_radio->id = (char*) malloc((strlen(token)+1)* sizeof(char));
-          strcpy(reg_radio->id, token);
+          reg_torre->id = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_torre->id, token);
           token = strtok(NULL, " ");
-          reg_radio->x = atof(token);
+          reg_torre->x = atof(token);
           token = strtok(NULL, " ");
-          reg_radio->y = atof(token);
-          inserirQUAHISERA(radio, *reg_radio);
+          reg_torre->y = atof(token);
+          torre_SVG(o_SVG, reg_torre);
+          inserirQUAHISERA(torre, *reg_torre);
         }
         /*---------- C O M A N D O  -  cq ----------*/
         else if(strcmp(comando, "cq") == 0) { /* Insere uma rádio-base (torre de celular) */
@@ -365,11 +364,11 @@ int main(int argc, char *argv[]) {
         else if(strcmp(comando, "ct") == 0) { /* Insere uma rádio-base (torre de celular) */
           fscanf(file, " %[^\n]s ", content);
           token = strtok(content, " ");
-          reg_radio->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
-          strcpy(reg_radio->borda, token);
+          reg_torre->borda = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_torre->borda, token);
           token = strtok(NULL, " ");
-          reg_radio->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
-          strcpy(reg_radio->cor, token);
+          reg_torre->cor = (char*) malloc((strlen(token)+1)* sizeof(char));
+          strcpy(reg_torre->cor, token);
         }
         /*---------- C O M A N D O  -  cs ----------*/
         else if(strcmp(comando, "cs") == 0) { /* Insere uma rádio-base (torre de celular) */
@@ -485,6 +484,137 @@ int main(int argc, char *argv[]) {
         /*---------- C O M A N D O  -  # ----------*/
         else if(strcmp(comando, "#") == 0) { /* Finaliza arquivo; */
             fscanf(file, " %[^\n]s ", content);
+
+            /*------- LEITURA DO ARQUIVO QRY ---------*/
+            while (!feof(qry)) { /* Loop até o fim do arquivo; */
+              fscanf(qry, " %s", comando); /* Lê a primeira linha do arquivo (comandos); */
+              /*---------- C O M A N D O  -  q? ----------*/
+              if(strcmp(comando, "q?") == 0) {
+                fscanf(qry, " %[^\n]s ", content);
+                REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                token = strtok(content, " ");
+                regRetanguloTemp->x = atof(token);
+                token = strtok(NULL, " ");
+                regRetanguloTemp->y = atof(token);
+                token = strtok(NULL, " ");
+                regRetanguloTemp->largura = atof(token);
+                token = strtok(NULL, " ");
+                regRetanguloTemp->altura = atof(token);
+                regRetanguloTemp->r = -1.0;
+
+                /* VERIFICAR SE A QUADRA ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                NODE quadra_node = quadra->cabeca;
+                while(quadra_node != NULL) {
+                  x = quadra_node->reg.x;
+                  y = quadra_node->reg.y;
+                  largura = quadra_node->reg.largura;
+                  altura = quadra_node->reg.altura;
+                  if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORRA\n");
+                  }
+                  quadra_node = quadra_node->prox;
+                }
+                /* VERIFICAR SE O HIDRANTE ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                NODE hidrante_node = hidrante->cabeca;
+                while(hidrante_node != NULL) {
+                  x = hidrante_node->reg.x;
+                  y = hidrante_node->reg.y;
+                  raio = 8;
+                  if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORRA PT2\n");
+                  }
+                  hidrante_node = hidrante_node->prox;
+                }
+                /* VERIFICAR SE A TORRE ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                NODE torre_node = torre->cabeca;
+                while(torre_node != NULL) {
+                  x = torre_node->reg.x;
+                  y = torre_node->reg.y;
+                  raio = 8;
+                  if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORRA PT3\n");
+                  }
+                  torre_node = torre_node->prox;
+                }
+                /* VERIFICAR SE O SEMAFORO ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                NODE semaforo_node = semaforo->cabeca;
+                while(semaforo_node != NULL) {
+                  x = semaforo_node->reg.x;
+                  y = semaforo_node->reg.y;
+                  largura = 15;
+                  altura = 35;
+                  if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORRA PT4\n");
+                  }
+                  semaforo_node = semaforo_node->prox;
+                }
+                fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", regRetanguloTemp->x, regRetanguloTemp->y, regRetanguloTemp->largura, regRetanguloTemp->altura);
+                fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+                free(regRetanguloTemp);
+              }
+              /*---------- C O M A N D O  -  Q? ----------*/
+              else if(strcmp(comando, "Q?") == 0) {
+                fscanf(qry, " %[^\n]s ", content);
+                REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                token = strtok(content, " ");
+                regCirculoTemp->r = atof(token);
+                token = strtok(NULL, " ");
+                regCirculoTemp->x = atof(token);
+                token = strtok(NULL, " ");
+                regCirculoTemp->y = atof(token);
+                /* VERIFICAR SE A QUADRA ESTÁ DENTRO DO CIRCULO TRACEJADO */
+                NODE quadra_node = quadra->cabeca;
+                while(quadra_node != NULL) {
+                  x = quadra_node->reg.x;
+                  y = quadra_node->reg.y;
+                  largura = quadra_node->reg.largura;
+                  altura = quadra_node->reg.altura;
+                  if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORR5\n");
+                  }
+                  quadra_node = quadra_node->prox;
+                }
+                /* VERIFICAR SE O HIDRANTE ESTÁ DENTRO DO CIRCULO TRACEJADO */
+                NODE hidrante_node = hidrante->cabeca;
+                while(hidrante_node != NULL) {
+                  x = hidrante_node->reg.x;
+                  y = hidrante_node->reg.y;
+                  raio = 8;
+                  if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp,x-raio, y)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORRA PT6\n");
+                  }
+                  hidrante_node = hidrante_node->prox;
+                }
+                /* VERIFICAR SE A TORRE ESTÁ DENTRO DO CIRCULO TRACEJADO */
+                NODE torre_node = torre->cabeca;
+                while(torre_node != NULL) {
+                  x = torre_node->reg.x;
+                  y = torre_node->reg.y;
+                  raio = 8;
+                  if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp,x-raio, y)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORRA PT7\n");
+                  }
+                  torre_node = torre_node->prox;
+                }
+                /* VERIFICAR SE O SEMAFORO ESTÁ DENTRO DO CIRCULO TRACEJADO */
+                NODE semaforo_node = semaforo->cabeca;
+                while(semaforo_node != NULL) {
+                  x = semaforo_node->reg.x;
+                  y = semaforo_node->reg.y;
+                  largura = 15;
+                  altura = 35;
+                  if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
+                    printf("\nPAU NO CU DO CARALHO ESSE CODIGO DO INFERNO PORRA PT8\n");
+                  }
+                  semaforo_node = semaforo_node->prox;
+                }
+
+                fprintf(o_SVG, "\t<circle r ='%f' x='%f' y='%f' fill='none'\n", regCirculoTemp->r, regCirculoTemp->x, regCirculoTemp->y);
+                fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+                free(regCirculoTemp);
+              }
+            }
+
             end_SVG(o_SVG); /* Fecha a TAG do SVG */
             fclose(o_SVG);
             fclose(o_TXT);
@@ -499,27 +629,27 @@ int main(int argc, char *argv[]) {
             free(reg_quadra->cor);
             free(reg_hidrante->cor);
             free(reg_semaforo->cor);
-            free(reg_radio->cor);
+            free(reg_torre->cor);
             free(reg_quadra->borda);
             free(reg_hidrante->borda);
             free(reg_semaforo->borda);
-            free(reg_radio->borda);
+            free(reg_torre->borda);
             free(reg_quadra);
             free(reg_hidrante);
             free(reg_semaforo);
-            free(reg_radio);
+            free(reg_torre);
             reinicializarListaEquip(quadra);
             free(quadra);
             reinicializarListaEquip(hidrante);
             free(hidrante);
             reinicializarListaEquip(semaforo);
             free(semaforo);
-            reinicializarListaEquip(radio);
-            free(radio);
+            reinicializarListaEquip(torre);
+            free(torre);
             reinicializarLista(lista);
             free(lista);
             /* ------------------------------------------------- */
-        }
+        }/* Altera o número máximo de círculos e retângulos; */
       }
       /* ---- FINALIZAÇÃO DO CÓDIGO ----- *//**/
       fclose(qry);

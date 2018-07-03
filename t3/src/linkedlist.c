@@ -26,8 +26,6 @@ void exibirLista(LISTA* lista) {
   NODE endereco = lista->cabeca;
   printf("\nLista: /");
   while(endereco != NULL) {
-    printf("%s/", endereco->reg.borda);
-    printf("%s\n", endereco->reg.cor);
     endereco = endereco->prox;
   }
   printf("\n");

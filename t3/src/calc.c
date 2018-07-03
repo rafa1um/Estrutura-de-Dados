@@ -22,6 +22,28 @@ int calc_interno(NODE search, double x, double y) {
   }
 }
 
+int calc_interno_2(REGISTRO *regTemp, double x, double y) {
+  double x1, y1, largura1, altura1;
+  if(regTemp->r == -1.0) {
+    x1 = regTemp->x;
+		y1 = regTemp->y;
+		largura1 = regTemp->largura;
+		altura1 = regTemp->altura;
+
+		if (x > x1 && x < (x1+largura1) && y > y1 && y < (y1+altura1)) return 1;
+		if(x >= x1 && x <= (x1+largura1) && y >= y1 && y <= (y1+altura1)) return 2;
+    return -1;
+  }
+  else {
+    x1 = regTemp->x;
+    y1 = regTemp->y;
+
+    if((pow(x1-x, 2) + pow(y1-y, 2)) < pow(regTemp->r, 2)) return 1;
+    if((pow(x1-x, 2) + pow(y1-y, 2)) == pow(regTemp->r, 2)) return 2;
+    return -1;
+  }
+}
+
 double calc_distance(NODE search01, NODE search02) {
   double x1, y1;
 

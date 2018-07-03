@@ -26,7 +26,7 @@ void circ(FILE* output, REGISTRO *regCirculo); /* DESENHA UM CIRCULO NO ARQUIVO 
   /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações do semaforo,
    tendo as informações, imprime no arquivo as linhas referentes ao semaforo. */
 
-   void radio_SVG(FILE* output, REGISTRO *reg_radio); /* DESENHA UMA TORRE DE RADIO NO ARQUIVO SVG */
+   void torre_SVG(FILE* output, REGISTRO *reg_torre); /* DESENHA UMA TORRE DE RADIO NO ARQUIVO SVG */
    /* Recebe um ponteiro para um arquivo e um registro onde está armazenado todas as informações da torre,
     tendo as informações, imprime no arquivo as linhas referentes à torre. */
 
