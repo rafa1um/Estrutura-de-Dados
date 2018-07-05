@@ -44,6 +44,7 @@ int calc_interno_2(REGISTRO *regTemp, double x, double y) {
   }
 }
 
+
 double calc_distance(NODE search01, NODE search02) {
   double x1, y1;
 

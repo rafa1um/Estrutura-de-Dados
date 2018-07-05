@@ -24,8 +24,9 @@ int tamanho(LISTA* lista) {
 /* Exibe os elemento da Lista; */
 void exibirLista(LISTA* lista) {
   NODE endereco = lista->cabeca;
-  printf("\nLista: /");
+  printf("\nLista: \n");
   while(endereco != NULL) {
+    printf("%s\n", endereco->reg.id);
     endereco = endereco->prox;
   }
   printf("\n");
@@ -42,14 +43,14 @@ NODE buscaSeq(LISTA* lista, int ch) {
 }
 
 /* Busca auxiliar; */
-NODE buscaSeqExc(LISTA* lista, int ch, NODE* anterior) {
+NODE buscaSeqExc(LISTA* lista, char* ch, NODE* anterior) {
   NODE atual = lista->cabeca;
   *anterior = NULL;
-  while(atual != NULL && atual->reg.chave < ch) {
+  while(atual != NULL && (strcmp(atual->reg.id, ch) != 0)) {
     *anterior = atual;
     atual = atual->prox;
   }
-  if(atual != NULL && atual->reg.chave == ch) return atual;
+  if(atual != NULL && (strcmp(atual->reg.id, ch) == 0)) return atual;
   return NULL;
 }
 
@@ -71,7 +72,7 @@ void inserirQUAHISERA(LISTA* cidade, REGISTRO reg) {
 }
 
 /* Exclui um elemento da Lista */
-int excluirElemento(LISTA* lista, int ch) {
+int excluirElemento(LISTA* lista, char* ch) {
   NODE anterior, i;
   i = buscaSeqExc(lista, ch, &anterior);
   if(i == NULL) {
