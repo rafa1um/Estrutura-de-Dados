@@ -7,7 +7,7 @@
 
 /* Inicializa a Lista */
 void inicializarLista(LISTA* lista) {
-  lista->cabeca = NULL;
+ lista->cabeca = NULL;
 }
 
 /* Retorna o tamanho da Lista; */
@@ -34,55 +34,88 @@ void exibirLista(LISTA* lista) {
 
 /* Busca um elemento na Lista; */
 NODE buscaSeq(LISTA* lista, int ch) {
-  NODE pos = lista->cabeca;
-  while(pos != NULL) {
-    if(pos->reg.chave == ch) return pos;
-    pos = pos->prox;
-  }
+  NODE pos = lista->cabeca->prox;
+  lista->cabeca->reg.chave = ch;
+  while(pos->reg.chave != ch) pos = pos->prox;
+  if(pos !=lista->cabeca) return pos;
   return NULL;
 }
 
 /* Busca auxiliar; */
-NODE buscaSeqExc(LISTA* lista, char* ch, NODE* anterior) {
+NODE buscaSeqExc(LISTA* lista, int ch, NODE* anterior) {
   NODE atual = lista->cabeca;
   *anterior = NULL;
-  while(atual != NULL && (strcmp(atual->reg.id, ch) != 0)) {
+  while((atual != NULL) && (atual->reg.chave < ch)) { /*(strcmp(atual->reg.id, ch) != 0)*/
     *anterior = atual;
     atual = atual->prox;
   }
-  if(atual != NULL && (strcmp(atual->reg.id, ch) == 0)) return atual;
+  if (atual != NULL && atual->reg.chave == ch) return atual;
+  return NULL;
+}
+
+NODE buscaSeqExc2(LISTA* lista, char* ch, NODE* anterior) {
+  NODE atual = lista->cabeca;
+  *anterior = NULL;
+  while((atual != NULL) && (strcmp(atual->reg.id, ch) != 0)) { /*(strcmp(atual->reg.id, ch) != 0)*/
+    *anterior = atual;
+    atual = atual->prox;
+  }
+  if (atual != NULL && (strcmp(atual->reg.id, ch) == 0)) return atual;
   return NULL;
 }
 
 /* Insere um elemento na Lista */
 void inserirElemento(LISTA* lista, REGISTRO reg) {
-  NODE i;
-  i = (NODE) malloc(sizeof(ELEMENTO));
+  NODE anterior, i;
+  i = buscaSeqExc(lista, reg.chave, &anterior);
+  if(i != NULL) printf("Elemento ja existe!!\n");
+  i  = (NODE) malloc(sizeof(ELEMENTO));
   i->reg = reg;
-  i->prox = lista->cabeca;
-  lista->cabeca = i;
+  if(anterior == NULL) {
+    i->prox = lista->cabeca;
+    lista->cabeca = i;
+  }
+  else {
+    i->prox = anterior->prox;
+    anterior->prox = i;
+  }
 }
 /* Insere um elemento na Lista cidade */
 void inserirQUAHISERA(LISTA* cidade, REGISTRO reg) {
-  NODE i;
+  NODE anterior, i;
+  i = buscaSeqExc2(cidade, reg.id, &anterior);
+  if(i != NULL) printf("Elemento ja existe!!\n");
   i = (NODE) malloc(sizeof(ELEMENTO));
   i->reg = reg;
-  i->prox = cidade->cabeca;
-  cidade->cabeca = i;
+  if(anterior == NULL) {
+    i->prox = cidade->cabeca;
+    cidade->cabeca = i;
+  }
+  else {
+    i->prox = anterior->prox;
+    anterior->prox = i;
+  }
+
 }
 
 /* Exclui um elemento da Lista */
-int excluirElemento(LISTA* lista, char* ch) {
+void excluirElemento(LISTA* lista, int ch) {
   NODE anterior, i;
   i = buscaSeqExc(lista, ch, &anterior);
-  if(i == NULL) {
-    printf("Elemento nao encontrado!");
-    return -1;
-  }
-  anterior->prox = i->prox;
+  if(i == NULL) printf("Elemento nao encontrado!\n");
+  if(anterior == NULL) lista->cabeca = i->prox;
+  else anterior->prox = i->prox;
   free(i);
-  printf("Elemento excluido com sucesso!");
-  return 1;
+}
+
+void excluirElemento2(LISTA* lista, char* ch) {
+  NODE anterior, i;
+  i = buscaSeqExc2(lista, ch, &anterior);
+  if(i == NULL) printf("Elemento nao encontrado!\n");
+  if(anterior == NULL) lista->cabeca = i->prox;
+  else anterior->prox = i->prox;
+  free(i->reg.id);
+  free(i);
 }
 
 /* Reinicializa a Lista */
@@ -90,8 +123,6 @@ void reinicializarLista(LISTA* lista) {
   NODE endereco = lista->cabeca;
   while (endereco != NULL) {
     NODE apagar = endereco;
-    free(endereco->reg.cor);
-    free(endereco->reg.borda);
     endereco = endereco->prox;
     free(apagar);
   }
@@ -102,7 +133,6 @@ void reinicializarListaEquip(LISTA* lista) {
   NODE endereco = lista->cabeca;
   while (endereco != NULL) {
     NODE apagar = endereco;
-    free(endereco->reg.id);
     endereco = endereco->prox;
     free(apagar);
   }

@@ -245,6 +245,8 @@ int main(int argc, char *argv[]) {
             regCirculo->y = atof(token);
             circ(o_SVG, regCirculo);
             inserirElemento(lista, *regCirculo);
+            free(regCirculo->cor);
+            free(regCirculo->borda);
             nx--;
           }
           else{
@@ -276,6 +278,8 @@ int main(int argc, char *argv[]) {
             regRetangulo->r = -1;
             rect(o_SVG, regRetangulo);
             inserirElemento(lista, *regRetangulo);
+            free(regRetangulo->cor);
+            free(regRetangulo->borda);
             nx--;
           }
           else {
@@ -484,175 +488,176 @@ int main(int argc, char *argv[]) {
         /*---------- C O M A N D O  -  # ----------*/
         else if(strcmp(comando, "#") == 0) { /* Finaliza arquivo; */
             fscanf(file, " %[^\n]s ", content);
+            if(base_qry != NULL) {
+              /*------- LEITURA DO ARQUIVO QRY ---------*/
+              while (!feof(qry)) { /* Loop até o fim do arquivo; */
+                fscanf(qry, " %s", comando); /* Lê a primeira linha do arquivo (comandos); */
+                /*---------- C O M A N D O  -  q? ----------*/
+                if(strcmp(comando, "q?") == 0) {
+                  fscanf(qry, " %[^\n]s ", content);
+                  REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                  token = strtok(content, " ");
+                  regRetanguloTemp->x = atof(token);
+                  token = strtok(NULL, " ");
+                  regRetanguloTemp->y = atof(token);
+                  token = strtok(NULL, " ");
+                  regRetanguloTemp->largura = atof(token);
+                  token = strtok(NULL, " ");
+                  regRetanguloTemp->altura = atof(token);
+                  regRetanguloTemp->r = -1.0;
 
-            /*------- LEITURA DO ARQUIVO QRY ---------*/
-            while (!feof(qry)) { /* Loop até o fim do arquivo; */
-              fscanf(qry, " %s", comando); /* Lê a primeira linha do arquivo (comandos); */
-              /*---------- C O M A N D O  -  q? ----------*/
-              if(strcmp(comando, "q?") == 0) {
-                fscanf(qry, " %[^\n]s ", content);
-                REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
-                token = strtok(content, " ");
-                regRetanguloTemp->x = atof(token);
-                token = strtok(NULL, " ");
-                regRetanguloTemp->y = atof(token);
-                token = strtok(NULL, " ");
-                regRetanguloTemp->largura = atof(token);
-                token = strtok(NULL, " ");
-                regRetanguloTemp->altura = atof(token);
-                regRetanguloTemp->r = -1.0;
+                  /* VERIFICAR SE A QUADRA ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                  NODE quadra_node = quadra->cabeca;
+                  while(quadra_node != NULL) {
+                    x = quadra_node->reg.x;
+                    y = quadra_node->reg.y;
+                    largura = quadra_node->reg.largura;
+                    altura = quadra_node->reg.altura;
+                    if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
+                      fprintf(o_TXT, "QUADRA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
+                    }
+                    quadra_node = quadra_node->prox;
+                  }
+                  /* VERIFICAR SE O HIDRANTE ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                  NODE hidrante_node = hidrante->cabeca;
+                  while(hidrante_node != NULL) {
+                    x = hidrante_node->reg.x;
+                    y = hidrante_node->reg.y;
+                    raio = 8;
+                    if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
+                      fprintf(o_TXT, "HIDRANTE: ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
+                    }
+                    hidrante_node = hidrante_node->prox;
+                  }
+                  /* VERIFICAR SE A TORRE ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                  NODE torre_node = torre->cabeca;
+                  while(torre_node != NULL) {
+                    x = torre_node->reg.x;
+                    y = torre_node->reg.y;
+                    raio = 8;
+                    if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
+                      fprintf(o_TXT, "TORRE: ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
+                    }
+                    torre_node = torre_node->prox;
+                  }
+                  /* VERIFICAR SE O SEMAFORO ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                  NODE semaforo_node = semaforo->cabeca;
+                  while(semaforo_node != NULL) {
+                    x = semaforo_node->reg.x;
+                    y = semaforo_node->reg.y;
+                    if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
+                      fprintf(o_TXT, "SEMAFORO: ID: %s - X: %lf - Y: %lf\n", semaforo_node->reg.id, semaforo_node->reg.x, semaforo_node->reg.y);
+                    }
+                    semaforo_node = semaforo_node->prox;
+                  }
+                  fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", regRetanguloTemp->x, regRetanguloTemp->y, regRetanguloTemp->largura, regRetanguloTemp->altura);
+                  fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+                  free(regRetanguloTemp);
+                }
 
-                /* VERIFICAR SE A QUADRA ESTÁ DENTRO DO RETANGULO TRACEJADO */
-                NODE quadra_node = quadra->cabeca;
-                while(quadra_node != NULL) {
-                  x = quadra_node->reg.x;
-                  y = quadra_node->reg.y;
-                  largura = quadra_node->reg.largura;
-                  altura = quadra_node->reg.altura;
-                  if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
-                    fprintf(o_TXT, "QUADRA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
+                /*---------- C O M A N D O  -  Q? ----------*/
+                else if(strcmp(comando, "Q?") == 0) {
+                  fscanf(qry, " %[^\n]s ", content);
+                  REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                  token = strtok(content, " ");
+                  regCirculoTemp->r = atof(token);
+                  token = strtok(NULL, " ");
+                  regCirculoTemp->x = atof(token);
+                  token = strtok(NULL, " ");
+                  regCirculoTemp->y = atof(token);
+                  /* VERIFICAR SE A QUADRA ESTÁ DENTRO DO CIRCULO TRACEJADO */
+                  NODE quadra_node = quadra->cabeca;
+                  while(quadra_node != NULL) {
+                    x = quadra_node->reg.x;
+                    y = quadra_node->reg.y;
+                    largura = quadra_node->reg.largura;
+                    altura = quadra_node->reg.altura;
+                    if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
+                      fprintf(o_TXT, "QUADRA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
+                    }
+                    quadra_node = quadra_node->prox;
                   }
-                  quadra_node = quadra_node->prox;
-                }
-                /* VERIFICAR SE O HIDRANTE ESTÁ DENTRO DO RETANGULO TRACEJADO */
-                NODE hidrante_node = hidrante->cabeca;
-                while(hidrante_node != NULL) {
-                  x = hidrante_node->reg.x;
-                  y = hidrante_node->reg.y;
-                  raio = 8;
-                  if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
-                    fprintf(o_TXT, "HIDRANTE: ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
+                  /* VERIFICAR SE O HIDRANTE ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                  NODE hidrante_node = hidrante->cabeca;
+                  while(hidrante_node != NULL) {
+                    x = hidrante_node->reg.x;
+                    y = hidrante_node->reg.y;
+                    raio = 8;
+                    if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp,x-raio, y)) == 1){
+                      fprintf(o_TXT, "HIDRANTE: ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
+                    }
+                    hidrante_node = hidrante_node->prox;
                   }
-                  hidrante_node = hidrante_node->prox;
-                }
-                /* VERIFICAR SE A TORRE ESTÁ DENTRO DO RETANGULO TRACEJADO */
-                NODE torre_node = torre->cabeca;
-                while(torre_node != NULL) {
-                  x = torre_node->reg.x;
-                  y = torre_node->reg.y;
-                  raio = 8;
-                  if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
-                    fprintf(o_TXT, "TORRE: ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
+                  /* VERIFICAR SE A TORRE ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                  NODE torre_node = torre->cabeca;
+                  while(torre_node != NULL) {
+                    x = torre_node->reg.x;
+                    y = torre_node->reg.y;
+                    raio = 8;
+                    if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y)) == 1){
+                      fprintf(o_TXT, "TORRE: ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
+                    }
+                    torre_node = torre_node->prox;
                   }
-                  torre_node = torre_node->prox;
-                }
-                /* VERIFICAR SE O SEMAFORO ESTÁ DENTRO DO RETANGULO TRACEJADO */
-                NODE semaforo_node = semaforo->cabeca;
-                while(semaforo_node != NULL) {
-                  x = semaforo_node->reg.x;
-                  y = semaforo_node->reg.y;
-                  if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
-                    fprintf(o_TXT, "SEMAFORO: ID: %s - X: %lf - Y: %lf\n", semaforo_node->reg.id, semaforo_node->reg.x, semaforo_node->reg.y);
+                  /* VERIFICAR SE O SEMAFORO ESTÁ DENTRO DO RETANGULO TRACEJADO */
+                  NODE semaforo_node = semaforo->cabeca;
+                  while(semaforo_node != NULL) {
+                    x = semaforo_node->reg.x;
+                    y = semaforo_node->reg.y;
+                    largura = 15;
+                    altura = 35;
+                    if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
+                      fprintf(o_TXT, "SEMAFORO: ID: %s - X: %lf - Y: %lf\n", semaforo_node->reg.id, semaforo_node->reg.x, semaforo_node->reg.y);
+                    }
+                    semaforo_node = semaforo_node->prox;
                   }
-                  semaforo_node = semaforo_node->prox;
+                  printf("%lf %lf %lf",regCirculoTemp->r,regCirculoTemp->x,regCirculoTemp->y);
+                  fprintf(o_SVG, "\t<circle r ='%f' cx='%f' cy='%f' fill='none'\n", regCirculoTemp->r, regCirculoTemp->x, regCirculoTemp->y);
+                  fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+                  free(regCirculoTemp);
                 }
-                fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", regRetanguloTemp->x, regRetanguloTemp->y, regRetanguloTemp->largura, regRetanguloTemp->altura);
-                fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
-                free(regRetanguloTemp);
+                /*---------- C O M A N D O  -  dq ----------*/
+                else if(strcmp(comando, "dq") == 0) {
+                  fscanf(qry, " %[^\n]s ", content);
+                  REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                  token = strtok(content, " ");
+                  regRetanguloTemp->x = atof(token);
+                  token = strtok(NULL, " ");
+                  regRetanguloTemp->y = atof(token);
+                  token = strtok(NULL, " ");
+                  regRetanguloTemp->largura = atof(token);
+                  token = strtok(NULL, " ");
+                  regRetanguloTemp->altura = atof(token);
+                  regRetanguloTemp->r = -1.0;
+                  NODE quadra_node = quadra->cabeca;
+                  while(quadra_node != NULL) {
+                    x = quadra_node->reg.x;
+                    y = quadra_node->reg.y;
+                    largura = quadra_node->reg.largura;
+                    altura = quadra_node->reg.altura;
+                    if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
+                      fprintf(o_TXT, "QUADRA REMOVIDA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
+                      excluirElemento2(quadra, quadra_node->reg.id);
+                    }
+                    quadra_node = quadra_node->prox;
+                  }
+                  free(regRetanguloTemp);
+                }
+                else if(strcmp(comando, "dle") == 0) {
+                  fscanf(qry, " %[^\n]s ", content);
+                  if(strcmp(token, "h") == 0) {
+
+                  }
+                  else if(strcmp(token, "r") == 0) {
+
+                  }
+                  else if(strcmp(token, "s") == 0) {
+
+                  }
+                }
               }
-
-              /*---------- C O M A N D O  -  Q? ----------*/
-              else if(strcmp(comando, "Q?") == 0) {
-                fscanf(qry, " %[^\n]s ", content);
-                REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
-                token = strtok(content, " ");
-                regCirculoTemp->r = atof(token);
-                token = strtok(NULL, " ");
-                regCirculoTemp->x = atof(token);
-                token = strtok(NULL, " ");
-                regCirculoTemp->y = atof(token);
-                /* VERIFICAR SE A QUADRA ESTÁ DENTRO DO CIRCULO TRACEJADO */
-                NODE quadra_node = quadra->cabeca;
-                while(quadra_node != NULL) {
-                  x = quadra_node->reg.x;
-                  y = quadra_node->reg.y;
-                  largura = quadra_node->reg.largura;
-                  altura = quadra_node->reg.altura;
-                  if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
-                    fprintf(o_TXT, "QUADRA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
-                  }
-                  quadra_node = quadra_node->prox;
-                }
-                /* VERIFICAR SE O HIDRANTE ESTÁ DENTRO DO RETANGULO TRACEJADO */
-                NODE hidrante_node = hidrante->cabeca;
-                while(hidrante_node != NULL) {
-                  x = hidrante_node->reg.x;
-                  y = hidrante_node->reg.y;
-                  raio = 8;
-                  if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp,x-raio, y)) == 1){
-                    fprintf(o_TXT, "HIDRANTE: ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
-                  }
-                  hidrante_node = hidrante_node->prox;
-                }
-                /* VERIFICAR SE A TORRE ESTÁ DENTRO DO RETANGULO TRACEJADO */
-                NODE torre_node = torre->cabeca;
-                while(torre_node != NULL) {
-                  x = torre_node->reg.x;
-                  y = torre_node->reg.y;
-                  raio = 8;
-                  if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y)) == 1){
-                    fprintf(o_TXT, "TORRE: ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
-                  }
-                  torre_node = torre_node->prox;
-                }
-                /* VERIFICAR SE O SEMAFORO ESTÁ DENTRO DO RETANGULO TRACEJADO */
-                NODE semaforo_node = semaforo->cabeca;
-                while(semaforo_node != NULL) {
-                  x = semaforo_node->reg.x;
-                  y = semaforo_node->reg.y;
-                  largura = 15;
-                  altura = 35;
-                  if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
-                    fprintf(o_TXT, "SEMAFORO: ID: %s - X: %lf - Y: %lf\n", semaforo_node->reg.id, semaforo_node->reg.x, semaforo_node->reg.y);
-                  }
-                  semaforo_node = semaforo_node->prox;
-                }
-                fprintf(o_SVG, "\t<circle r ='%f' x='%f' y='%f' fill='none'\n", regCirculoTemp->r, regCirculoTemp->x, regCirculoTemp->y);
-                fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
-                free(regCirculoTemp);
-              }
-              /*---------- C O M A N D O  -  dq ----------*/
-              else if(strcmp(comando, "dq") == 0) {
-                exibirLista(quadra);
-                fscanf(qry, " %[^\n]s ", content);
-                REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
-                token = strtok(content, " ");
-                regRetanguloTemp->x = atof(token);
-                token = strtok(NULL, " ");
-                regRetanguloTemp->y = atof(token);
-                token = strtok(NULL, " ");
-                regRetanguloTemp->largura = atof(token);
-                token = strtok(NULL, " ");
-                regRetanguloTemp->altura = atof(token);
-                regRetanguloTemp->r = -1.0;
-                NODE quadra_node = quadra->cabeca;
-                while(quadra_node != NULL) {
-                  x = quadra_node->reg.x;
-                  y = quadra_node->reg.y;
-                  largura = quadra_node->reg.largura;
-                  altura = quadra_node->reg.altura;
-                  if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
-                    fprintf(o_TXT, "QUADRA REMOVIDA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
-                    excluirElemento(quadra, quadra_node->reg.id);
-                  }
-                  quadra_node = quadra_node->prox;
-                }
-                free(regRetanguloTemp);
-              }
-              else if(strcmp(comando, "dle") == 0) {
-                fscanf(qry, " %[^\n]s ", content);
-                if(strcmp(token, "h") == 0) {
-
-                }
-                else if(strcmp(token, "r") == 0) {
-
-                }
-                else if(strcmp(token, "s") == 0) {
-
-                }
-              }
+              fclose(qry);
             }
-
 
             end_SVG(o_SVG); /* Fecha a TAG do SVG */
             fclose(o_SVG);
@@ -691,7 +696,6 @@ int main(int argc, char *argv[]) {
         }/* Altera o número máximo de círculos e retângulos; */
       }
       /* ---- FINALIZAÇÃO DO CÓDIGO ----- *//**/
-      fclose(qry);
       fclose(file);
       printf("Programa executado com sucesso!\n");
       /* -------------------------------- */
