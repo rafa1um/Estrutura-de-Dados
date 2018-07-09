@@ -134,6 +134,7 @@ void reinicializarListaEquip(LISTA* lista) {
   while (endereco != NULL) {
     NODE apagar = endereco;
     endereco = endereco->prox;
+    free(apagar->reg.id);
     free(apagar);
   }
   lista->cabeca = NULL;

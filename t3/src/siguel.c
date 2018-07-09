@@ -3,11 +3,11 @@
 #include "calc.h"
 
 int main(int argc, char *argv[]) {
-      FILE *file, *o_SVG, *o_TXT, *o_suSVG, *qry;
+      FILE *file, *o_SVG, *o_TXT, *o_suSVG, *qry, *o_qrySVG;
       char *base_name = NULL, *token = NULL, *dir = NULL, *path = NULL, *content = NULL, *aux = NULL, *aux_name = NULL, *base_qry = NULL;
       char comando[5];
       double x, y, altura, largura, raio, distance;
-      int nx = 1000, id1, id2, i_point, sobrepos, open = 0, i, j, len;
+      int nx = 1000, id1, id2, i_point, sobrepos, open = 0, open2 = 0, i, j, len;
       REGISTRO *regCirculo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *regRetangulo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *reg_quadra = (REGISTRO*) malloc(sizeof(REGISTRO));
@@ -138,8 +138,8 @@ int main(int argc, char *argv[]) {
       }
 
       if(base_qry != NULL) { /* Verifica se o arquivo qry foi aberto com exito */
-        printf("Arquivo qry executado com sucesso!");
-
+        printf("Arquivo qry executado com sucesso!\n");
+        printf("%s", base_qry);
         len = strlen(base_qry);
         for (i = len-1; i > -1; i--) {
           if (base_qry[i] == '/') {
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
         aux_name = (char*) calloc((strlen(base_name) + (strlen(dir))+5), sizeof(char));
         sprintf(aux_name, "%s%s.txt", dir, base_name);
       }
-      o_TXT = fopen(aux_name, "w"); /* Abre ou cria arquivo .txt em modo escrita */
+      o_TXT = fopen(aux_name, "a"); /* Abre ou cria arquivo .txt em modo escrita */
       free(aux_name);
       if (dir[strlen(dir)-1] != '/') {
         aux_name = (char*) calloc((strlen(base_name) + (strlen(dir))+6), sizeof(char));
@@ -492,6 +492,24 @@ int main(int argc, char *argv[]) {
               /*------- LEITURA DO ARQUIVO QRY ---------*/
               while (!feof(qry)) { /* Loop até o fim do arquivo; */
                 fscanf(qry, " %s", comando); /* Lê a primeira linha do arquivo (comandos); */
+                if(feof(qry)){
+                  break;
+                }
+                if(open2 == 0) {
+                  if (dir[strlen(dir)-1] != '/') {
+                    aux_name = (char*) calloc((strlen(base_name) + (strlen(dir))+ (strlen(token))+7), sizeof(char));
+                    sprintf(aux_name, "%s/%s-%s.svg", dir, base_name, base_qry);
+              		}
+                  else {
+                    aux_name = (char*) calloc((strlen(base_name) + (strlen(dir))+ (strlen(token))+6), sizeof(char));
+                    sprintf(aux_name, "%s%s-%s.svg", dir, base_name, base_qry);
+                  }
+                  /* ---------------------------------------------------------------------- */
+                  o_qrySVG = fopen(aux_name, "w");
+                  free(aux_name);
+                  new_SVG(o_qrySVG);
+                  open = 1;
+                }
                 /*---------- C O M A N D O  -  q? ----------*/
                 if(strcmp(comando, "q?") == 0) {
                   fscanf(qry, " %[^\n]s ", content);
@@ -505,7 +523,8 @@ int main(int argc, char *argv[]) {
                   token = strtok(NULL, " ");
                   regRetanguloTemp->altura = atof(token);
                   regRetanguloTemp->r = -1.0;
-
+                  fprintf(o_qrySVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", regRetanguloTemp->x, regRetanguloTemp->y, regRetanguloTemp->largura, regRetanguloTemp->altura);
+                  fprintf(o_qrySVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
                   /* VERIFICAR SE A QUADRA ESTÁ DENTRO DO RETANGULO TRACEJADO */
                   NODE quadra_node = quadra->cabeca;
                   while(quadra_node != NULL) {
@@ -514,7 +533,7 @@ int main(int argc, char *argv[]) {
                     largura = quadra_node->reg.largura;
                     altura = quadra_node->reg.altura;
                     if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
-                      fprintf(o_TXT, "QUADRA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
+                      fprintf(o_TXT, "QUADRA - CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
                     }
                     quadra_node = quadra_node->prox;
                   }
@@ -525,7 +544,7 @@ int main(int argc, char *argv[]) {
                     y = hidrante_node->reg.y;
                     raio = 8;
                     if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
-                      fprintf(o_TXT, "HIDRANTE: ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
+                      fprintf(o_TXT, "HIDRANTE - ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
                     }
                     hidrante_node = hidrante_node->prox;
                   }
@@ -536,7 +555,7 @@ int main(int argc, char *argv[]) {
                     y = torre_node->reg.y;
                     raio = 8;
                     if((calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp, x, y-raio) == 1) && (calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp,x-raio, y)) == 1){
-                      fprintf(o_TXT, "TORRE: ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
+                      fprintf(o_TXT, "TORRE - ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
                     }
                     torre_node = torre_node->prox;
                   }
@@ -546,12 +565,10 @@ int main(int argc, char *argv[]) {
                     x = semaforo_node->reg.x;
                     y = semaforo_node->reg.y;
                     if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
-                      fprintf(o_TXT, "SEMAFORO: ID: %s - X: %lf - Y: %lf\n", semaforo_node->reg.id, semaforo_node->reg.x, semaforo_node->reg.y);
+                      fprintf(o_TXT, "SEMAFORO - ID: %s - X: %lf - Y: %lf\n", semaforo_node->reg.id, semaforo_node->reg.x, semaforo_node->reg.y);
                     }
                     semaforo_node = semaforo_node->prox;
                   }
-                  fprintf(o_SVG, "\t<rect x='%f' y='%f' width='%f' height='%f' fill='none'\n", regRetanguloTemp->x, regRetanguloTemp->y, regRetanguloTemp->largura, regRetanguloTemp->altura);
-                  fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
                   free(regRetanguloTemp);
                 }
 
@@ -573,7 +590,7 @@ int main(int argc, char *argv[]) {
                     largura = quadra_node->reg.largura;
                     altura = quadra_node->reg.altura;
                     if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
-                      fprintf(o_TXT, "QUADRA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
+                      fprintf(o_TXT, "QUADRA - CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
                     }
                     quadra_node = quadra_node->prox;
                   }
@@ -584,7 +601,7 @@ int main(int argc, char *argv[]) {
                     y = hidrante_node->reg.y;
                     raio = 8;
                     if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp,x-raio, y)) == 1){
-                      fprintf(o_TXT, "HIDRANTE: ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
+                      fprintf(o_TXT, "HIDRANTE - ID: %s - X: %lf - Y: %lf\n", hidrante_node->reg.id, hidrante_node->reg.x, hidrante_node->reg.y);
                     }
                     hidrante_node = hidrante_node->prox;
                   }
@@ -595,7 +612,7 @@ int main(int argc, char *argv[]) {
                     y = torre_node->reg.y;
                     raio = 8;
                     if((calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp, x, y-raio) == 1) && (calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y)) == 1){
-                      fprintf(o_TXT, "TORRE: ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
+                      fprintf(o_TXT, "TORRE - ID: %s - X: %lf - Y: %lf\n", torre_node->reg.id, torre_node->reg.x, torre_node->reg.y);
                     }
                     torre_node = torre_node->prox;
                   }
@@ -612,8 +629,8 @@ int main(int argc, char *argv[]) {
                     semaforo_node = semaforo_node->prox;
                   }
                   printf("%lf %lf %lf",regCirculoTemp->r,regCirculoTemp->x,regCirculoTemp->y);
-                  fprintf(o_SVG, "\t<circle r ='%f' cx='%f' cy='%f' fill='none'\n", regCirculoTemp->r, regCirculoTemp->x, regCirculoTemp->y);
-                  fprintf(o_SVG, "\t\tstyle=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
+                  fprintf(o_qrySVG, "\t<circle r ='%f' cx='%f' cy='%f' fill='none'", regCirculoTemp->r, regCirculoTemp->x, regCirculoTemp->y);
+                  fprintf(o_qrySVG, "style=\"stroke:%s; stroke-width:3; stroke-dasharray:5,5\" />\n", "black");
                   free(regCirculoTemp);
                 }
                 /*---------- C O M A N D O  -  dq ----------*/
@@ -636,27 +653,526 @@ int main(int argc, char *argv[]) {
                     largura = quadra_node->reg.largura;
                     altura = quadra_node->reg.altura;
                     if((calc_interno_2(regRetanguloTemp, x, y) == 1) && (calc_interno_2(regRetanguloTemp, x+largura, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+altura) == 1) && (calc_interno_2(regRetanguloTemp,x+largura, y+altura)) == 1){
-                      fprintf(o_TXT, "QUADRA REMOVIDA: CEP: %s - X: %lf - Y: %lf - H: %lf - W: %lf\n", quadra_node->reg.id, quadra_node->reg.x, quadra_node->reg.y, quadra_node->reg.largura, quadra_node->reg.altura);
+                      fprintf(o_TXT, "QUADRA REMOVIDA - CEP: %s\n", quadra_node->reg.id);
                       excluirElemento2(quadra, quadra_node->reg.id);
                     }
                     quadra_node = quadra_node->prox;
                   }
                   free(regRetanguloTemp);
                 }
+                /*---------- C O M A N D O  -  dle ----------*/
                 else if(strcmp(comando, "dle") == 0) {
                   fscanf(qry, " %[^\n]s ", content);
+                  token = strtok(content, " ");
+                  /* -----  APENAS h ----- */
                   if(strcmp(token, "h") == 0) {
-
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->y = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->largura = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->altura = atof(token);
+                    regRetanguloTemp->r = -1.0;
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    free(regRetanguloTemp);
                   }
+                  /* -----  APENAS r ----- *//*---------- C O M A N D O  -  dle ----------*/
                   else if(strcmp(token, "r") == 0) {
-
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->y = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->largura = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->altura = atof(token);
+                    regRetanguloTemp->r = -1.0;
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    free(regRetanguloTemp);
                   }
+                  /* -----  APENAS s ----- */
                   else if(strcmp(token, "s") == 0) {
-
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->y = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->largura = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->altura = atof(token);
+                    regRetanguloTemp->r = -1.0;
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    free(regRetanguloTemp);
+                  }
+                  /* -----  PARA hr ou rh ----- */
+                  else if((strcmp(token, "hr") == 0) || (strcmp(token, "rh") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->y = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->largura = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->altura = atof(token);
+                    regRetanguloTemp->r = -1.0;
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    free(regRetanguloTemp);
+                  }
+                  /* -----  PARA hs ou sh ----- */
+                  else if((strcmp(token, "hs") == 0) || (strcmp(token, "sh") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->y = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->largura = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->altura = atof(token);
+                    regRetanguloTemp->r = -1.0;
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    free(regRetanguloTemp);
+                  }
+                  /* -----  PARA sr ou rs ----- */
+                  else if((strcmp(token, "sr") == 0) || (strcmp(token, "rs") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->y = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->largura = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->altura = atof(token);
+                    regRetanguloTemp->r = -1.0;
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    free(regRetanguloTemp);
+                  }
+                  /* -----  PARA  todas as 6 possibilidades com 3 letras ----- */
+                  else if((strcmp(token, "srh") == 0) || (strcmp(token, "shr") == 0) || (strcmp(token, "rsh") == 0) || (strcmp(token, "rhs") == 0) || (strcmp(token, "hsr") == 0) || (strcmp(token, "hrs") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regRetanguloTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->y = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->largura = atof(token);
+                    token = strtok(NULL, " ");
+                    regRetanguloTemp->altura = atof(token);
+                    regRetanguloTemp->r = -1.0;
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regRetanguloTemp, x+raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x-raio, y) == 1) && (calc_interno_2(regRetanguloTemp, x, y+raio) == 1) && (calc_interno_2(regRetanguloTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    free(regRetanguloTemp);
+                  }
+                }
+                /*---------- C O M A N D O  -  Dq ----------*/
+                else if(strcmp(comando, "Dq") == 0) {
+                  fscanf(qry, " %[^\n]s ", content);
+                  REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                  token = strtok(content, " ");
+                  regCirculoTemp->r = atof(token);
+                  token = strtok(NULL, " ");
+                  regCirculoTemp->x = atof(token);
+                  token = strtok(NULL, " ");
+                  regCirculoTemp->y = atof(token);
+                  NODE quadra_node = quadra->cabeca;
+                  while(quadra_node != NULL) {
+                    x = quadra_node->reg.x;
+                    y = quadra_node->reg.y;
+                    largura = quadra_node->reg.largura;
+                    altura = quadra_node->reg.altura;
+                    if((calc_interno_2(regCirculoTemp, x, y) == 1) && (calc_interno_2(regCirculoTemp, x+largura, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+altura) == 1) && (calc_interno_2(regCirculoTemp,x+largura, y+altura)) == 1){
+                      fprintf(o_TXT, "QUADRA REMOVIDA - CEP: %s\n", quadra_node->reg.id);
+                      excluirElemento2(quadra, quadra_node->reg.id);
+                    }
+                    quadra_node = quadra_node->prox;
+                  }
+                  free(regCirculoTemp);
+                  exibirLista(quadra);
+                }
+                /*---------- C O M A N D O  -  Dle ----------*/
+                else if(strcmp(comando, "Dle") == 0) {
+                  fscanf(qry, " %[^\n]s ", content);
+                  token = strtok(content, " ");
+                  /* -----  APENAS h ----- */
+                  if(strcmp(token, "h") == 0) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(content, " ");
+                    regCirculoTemp->r = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->y = atof(token);
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    free(regCirculoTemp);
+                  }
+                  /* -----  APENAS r ----- *//*---------- C O M A N D O  -  dle ----------*/
+                  else if(strcmp(token, "r") == 0) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(content, " ");
+                    regCirculoTemp->r = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->y = atof(token);
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    free(regCirculoTemp);
+                  }
+                  /* -----  APENAS s ----- */
+                  else if(strcmp(token, "s") == 0) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(content, " ");
+                    regCirculoTemp->r = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->y = atof(token);
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    free(regCirculoTemp);
+                  }
+                  /* -----  PARA hr ou rh ----- */
+                  else if((strcmp(token, "hr") == 0) || (strcmp(token, "rh") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(content, " ");
+                    regCirculoTemp->r = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->y = atof(token);
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    free(regCirculoTemp);
+                  }
+                  /* -----  PARA hs ou sh ----- */
+                  else if((strcmp(token, "hs") == 0) || (strcmp(token, "sh") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(content, " ");
+                    regCirculoTemp->r = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->y = atof(token);
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    free(regCirculoTemp);
+                  }
+                  /* -----  PARA sr ou rs ----- */
+                  else if((strcmp(token, "sr") == 0) || (strcmp(token, "rs") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(content, " ");
+                    regCirculoTemp->r = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->y = atof(token);
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    free(regCirculoTemp);
+                  }
+                  /* -----  PARA  todas as 6 possibilidades com 3 letras ----- */
+                  else if((strcmp(token, "srh") == 0) || (strcmp(token, "shr") == 0) || (strcmp(token, "rsh") == 0) || (strcmp(token, "rhs") == 0) || (strcmp(token, "hsr") == 0) || (strcmp(token, "hrs") == 0)) {
+                    fscanf(qry, " %[^\n]s ", content);
+                    REGISTRO *regCirculoTemp = (REGISTRO*) malloc(sizeof(REGISTRO));
+                    token = strtok(content, " ");
+                    regCirculoTemp->r = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->x = atof(token);
+                    token = strtok(NULL, " ");
+                    regCirculoTemp->y = atof(token);
+                    NODE torre_node = torre->cabeca;
+                    while(torre_node != NULL) {
+                      x = torre_node->reg.x;
+                      y = torre_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", torre_node->reg.id);
+                        excluirElemento2(torre, torre_node->reg.id);
+                      }
+                      torre_node = torre_node->prox;
+                    }
+                    NODE semaforo_node = semaforo->cabeca;
+                    while(semaforo_node != NULL) {
+                      x = semaforo_node->reg.x;
+                      y = semaforo_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "TORRE REMOVIDO - ID: %s\n", semaforo_node->reg.id);
+                        excluirElemento2(semaforo, semaforo_node->reg.id);
+                      }
+                      semaforo_node = semaforo_node->prox;
+                    }
+                    NODE hidrante_node = hidrante->cabeca;
+                    while(hidrante_node != NULL) {
+                      x = hidrante_node->reg.x;
+                      y = hidrante_node->reg.y;
+                      raio = 8;
+                      if((calc_interno_2(regCirculoTemp, x+raio, y) == 1) && (calc_interno_2(regCirculoTemp, x-raio, y) == 1) && (calc_interno_2(regCirculoTemp, x, y+raio) == 1) && (calc_interno_2(regCirculoTemp,x, y-raio)) == 1){
+                        fprintf(o_TXT, "HIDRANTE REMOVIDO - ID: %s\n", hidrante_node->reg.id);
+                        excluirElemento2(hidrante, hidrante_node->reg.id);
+                      }
+                      hidrante_node = hidrante_node->prox;
+                    }
+                    free(regCirculoTemp);
                   }
                 }
               }
               fclose(qry);
+              NODE quadra_node = quadra->cabeca;
+              while(quadra_node != NULL) {
+                fprintf(o_qrySVG, "\t<rect fill='%s' stroke='%s' stroke-width='%dpx' width='%f' height='%f' y='%f' x='%f' />\n", quadra_node->reg.cor, quadra_node->reg.borda, 1, quadra_node->reg.largura, quadra_node->reg.altura, quadra_node->reg.y, quadra_node->reg.x);
+                quadra_node = quadra_node->prox;
+              }
+              NODE hidrante_node = hidrante->cabeca;
+              while(hidrante_node != NULL) {
+                fprintf(o_qrySVG, "\t<circle fill='%s' stroke='%s' r='%f' cx='%f' cy='%f' />\n", hidrante_node->reg.cor, hidrante_node->reg.borda, 8.0, hidrante_node->reg.x, hidrante_node->reg.y);
+                hidrante_node = hidrante_node->prox;
+              }
+              NODE torre_node = torre->cabeca;
+              while(torre_node != NULL) {
+                fprintf(o_qrySVG, "\t<circle fill='%s' stroke='%s' r='%f' cx='%f' cy='%f' />\n", torre_node->reg.cor, torre_node->reg.borda, 8.0, torre_node->reg.x, torre_node->reg.y);
+                torre_node = torre_node->prox;
+              }
+              NODE semaforo_node = semaforo->cabeca;
+              while(semaforo_node != NULL) {
+                fprintf(o_qrySVG, "\t<rect fill='%s' stroke='%s' stroke-width='%dpx' width='%f' height='%f' y='%f' x='%f' />\n", semaforo_node->reg.cor, semaforo_node->reg.borda, 1, 15.0, 35.0, semaforo_node->reg.y, semaforo_node->reg.x);
+                semaforo_node = semaforo_node->prox;
+              }
+              end_SVG(o_qrySVG);
+              fclose(o_qrySVG);
             }
 
             end_SVG(o_SVG); /* Fecha a TAG do SVG */
