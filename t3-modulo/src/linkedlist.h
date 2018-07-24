@@ -1,6 +1,15 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
+/* -- NEW DECENT LIST -- */
+
+typedef struct aux_gen{
+  void *data;
+  struct aux_gen* next;
+} GENERIC;
+
+
+/*  --  FIM NEW LIST --*/
 typedef struct {
   int chave;
   char *id;
@@ -19,6 +28,7 @@ typedef struct aux{
   REGISTRO reg;
   struct aux* prox;
 } ELEMENTO;
+
 
 typedef ELEMENTO* NODE;
 

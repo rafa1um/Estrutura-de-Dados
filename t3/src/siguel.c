@@ -1,10 +1,6 @@
 #include "svg.h"
 #include "io_name.h"
 #include "calc.h"
-#include "hidrante.h"
-#include "quadra.h"
-#include "semaforo.h"
-#include "torre.h"
 
 int main(int argc, char *argv[]) {
       FILE *file, *o_SVG, *o_TXT, *o_suSVG, *qry, *o_qrySVG;
@@ -12,11 +8,6 @@ int main(int argc, char *argv[]) {
       char comando[5];
       double x, y, altura, largura, raio, distance;
       int nx = 1000, id1, id2, i_point, sobrepos, open = 0, open2 = 0, i, j, len;
-
-      /*EQUIPAMENTOS URBANOS */
-      STORE_COLOR *cor_borda;
-
-      /* ------------------- */
       REGISTRO *regCirculo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *regRetangulo = (REGISTRO*) malloc(sizeof(REGISTRO));
       REGISTRO *reg_quadra = (REGISTRO*) malloc(sizeof(REGISTRO));
@@ -28,9 +19,6 @@ int main(int argc, char *argv[]) {
       LISTA *hidrante = (LISTA*) malloc(sizeof(LISTA));
       LISTA *semaforo = (LISTA*) malloc(sizeof(LISTA));
       LISTA *torre = (LISTA*) malloc(sizeof(LISTA));
-      /*GENERIC *hidrante1 = NULL;
-      hidrante1->data = reg_hidrante
-      printf("%lf", ((REGISTRO *)hidrante1->data)->x);*/
       NODE search01, search02;
 
       /* ------------- ARGUMENTOS ---------------*/
@@ -231,7 +219,6 @@ int main(int argc, char *argv[]) {
 
       while (!feof(file)) { /* Loop até o fim do arquivo; */
         fscanf(file, " %s", comando); /* Lê a primeira linha do arquivo (comandos); */
-        printf("%s\n", comando);
         /*---------- C O M A N D O  -  nx ----------*/
         if(strcmp(comando, "nx") == 0) { /* Altera o número máximo de círculos e retângulos; */
             fscanf(file, " %[^\n]s ", content);
