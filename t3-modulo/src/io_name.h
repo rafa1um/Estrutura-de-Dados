@@ -1,3 +1,6 @@
+#ifndef IONAME_H
+#define IONAME_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,3 +27,5 @@ void free_str(char **slave);
 void birth_color(STORE_COLOR *slave);
 
 void kill_color(STORE_COLOR *slave);
+
+#endif

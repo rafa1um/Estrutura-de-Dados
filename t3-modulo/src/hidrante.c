@@ -16,7 +16,7 @@ void add_hidrante(GENERIC **head, char *line, STORE_COLOR *cor_borda) {
   char *token = NULL;
   GENERIC *new_node = NULL;
   HIDRANTE *new_reg = (HIDRANTE*) calloc(1, sizeof(HIDRANTE));
-  inicializar_hidrante(new_node);
+  ini_hidrante(new_node);
   token = strtok(line, " ");
   new_reg->id = (char*) calloc(strlen(token) + 1, sizeof(char));
   strcpy(new_reg->id, token);
@@ -57,4 +57,16 @@ void del_hidrante(GENERIC *head) {
     free(aux->data);
     free(aux);
   }
+}
+
+int search_hidrante(GENERIC *head, GENERIC **node, char *id) {
+  GENERIC *aux = head;
+  while(aux != NULL) {
+    if(strcmp(id, (((HIDRANTE *)aux->data)->id)) == 0) {
+      *node = aux;
+      return 1;
+    }
+    aux = aux->next;
+  }
+  return -1;
 }

@@ -20,6 +20,7 @@ void ini_hidrante(GENERIC *head);
 void add_hidrante(GENERIC **head, char *line, STORE_COLOR *cor_borda);
 void show_hidrante(GENERIC *head);
 void del_hidrante(GENERIC *head);
+int search_hidrante(GENERIC *head, GENERIC **node, char *id);
 
 
 
